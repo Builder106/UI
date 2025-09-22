@@ -22,10 +22,10 @@
       }
     },
     "children": [
-      { "node": "Image", "props": { "id": "icon", "role": "img", "aria": { "label": "Feature icon" } } },
-      { "node": "Text", "props": { "id": "title", "role": "heading" } },
-      { "node": "Text", "props": { "id": "body" } },
-      { "node": "Button", "props": { "id": "learn-more", "role": "button", "aria": { "label": "Learn more" } } }
+      { "node": "Image", "props": { "id": "icon", "role": "img", "aria": { "label": "Feature icon" }, "src": "/icons/feature.svg", "alt": "Feature" } },
+      { "node": "Text", "props": { "id": "title", "role": "heading", "headingLevel": 3, "text": "Powerful tooling" } },
+      { "node": "Text", "props": { "id": "body", "text": "Build accessible components quickly with sensible defaults." } },
+      { "node": "Button", "props": { "id": "learn-more", "role": "button", "aria": { "label": "Learn more" }, "text": "Learn more" } }
     ]
   }
 }

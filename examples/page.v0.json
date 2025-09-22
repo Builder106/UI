@@ -28,6 +28,7 @@
               "id": "nav-home",
               "role": "link",
               "aria": { "label": "Home" },
+              "text": "Home",
               "style": { "color": "token(color.fg)" }
             }
           }
@@ -48,6 +49,8 @@
             "props": {
               "id": "hero-title",
               "role": "heading",
+              "headingLevel": 1,
+              "text": "Build fast, accessible UIs",
               "style": { "fontSize": 48, "fontWeight": 700 }
             }
           },
@@ -58,6 +61,7 @@
               "role": "button",
               "aria": { "label": "Get started" },
               "events": [{ "type": "click", "action": "navigate:/signup" }],
+              "text": "Get started",
               "style": { "backgroundColor": "token(color.primary)", "color": "#fff", "borderRadius": "8px" }
             }
           }

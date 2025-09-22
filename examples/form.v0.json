@@ -15,7 +15,20 @@
           "id": "email",
           "role": "textbox",
           "aria": { "label": "Email address", "describedBy": "email-hint" },
-          "dataBindings": { "value": "user.email" }
+          "dataBindings": { "value": "user.email" },
+          "type": "email",
+          "name": "email",
+          "placeholder": "you@example.com",
+          "autocomplete": "email",
+          "required": true
+        }
+      },
+      {
+        "node": "Text",
+        "props": {
+          "id": "email-hint",
+          "text": "We'll never share your email.",
+          "style": { "fontSize": 12 }
         }
       },
       {
@@ -23,7 +36,12 @@
         "props": {
           "id": "password",
           "role": "textbox",
-          "aria": { "label": "Password" }
+          "aria": { "label": "Password" },
+          "type": "password",
+          "name": "password",
+          "placeholder": "Create a password",
+          "autocomplete": "new-password",
+          "required": true
         }
       },
       {
@@ -33,6 +51,7 @@
           "role": "button",
           "aria": { "label": "Create account" },
           "events": [{ "type": "submit", "action": "submit:signup" }],
+          "text": "Create account",
           "style": { "backgroundColor": "token(color.primary)", "color": "#fff" }
         }
       }

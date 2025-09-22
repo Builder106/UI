@@ -163,7 +163,21 @@
           },
           "required": ["for"],
           "additionalProperties": false
-        }
+        },
+        "text": { "type": "string", "description": "Visible text content (Text, Button, headings)." },
+        "headingLevel": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "src": { "type": "string", "description": "Image source URL." },
+        "alt": { "type": "string", "description": "Accessible alternative text for images." },
+        "sizes": { "type": "string" },
+        "srcset": { "type": "string" },
+        "loading": { "enum": ["lazy", "eager"] },
+        "href": { "type": "string", "description": "Link target for link-like controls." },
+        "type": { "type": "string", "description": "Input type or element subtype (e.g., email, password)." },
+        "name": { "type": "string" },
+        "placeholder": { "type": "string" },
+        "value": { "type": "string" },
+        "autocomplete": { "type": "string" },
+        "required": { "type": "boolean" }
       },
       "required": ["id"],
       "additionalProperties": true
