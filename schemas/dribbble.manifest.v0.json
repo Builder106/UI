@@ -1,0 +1,66 @@
+{
+  "$id": "https://example.com/schemas/dribbble.manifest.v0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dribbble shot manifest v0",
+  "type": "object",
+  "required": ["schemaVersion", "id", "url", "creator", "assets", "license", "consent"],
+  "properties": {
+    "schemaVersion": { "const": "v0" },
+    "id": { "type": "string" },
+    "url": { "type": "string" },
+    "creator": {
+      "type": "object",
+      "required": ["handle"],
+      "properties": {
+        "handle": { "type": "string" },
+        "name": { "type": "string" },
+        "profileUrl": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "title": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "assets": {
+      "type": "object",
+      "required": ["image"],
+      "properties": {
+        "image": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "textOcr": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "labels": {
+      "type": "object",
+      "properties": {
+        "components": { "type": "array", "items": { "type": "string" } },
+        "styles": { "type": "array", "items": { "type": "string" } },
+        "themes": { "type": "array", "items": { "type": "string" } },
+        "a11yCues": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "license": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["consent", "permissive", "custom", "unknown"] },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "consent": {
+      "type": "object",
+      "required": ["granted"],
+      "properties": {
+        "granted": { "type": "boolean" },
+        "evidence": { "type": "string", "description": "Path to consent artifact (pdf/png)" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+
+

@@ -1,0 +1,80 @@
+{
+  "$id": "https://example.com/schemas/provenance.v0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Provenance manifest v0",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "source",
+    "timestamp",
+    "artifacts",
+    "hashes"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "v0" },
+    "id": { "type": "string", "description": "Stable content-address id (e.g., sha256 prefix)" },
+    "source": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": { "type": "string" },
+        "license": { "type": "string" },
+        "tosNote": { "type": "string" },
+        "robotsPolicy": { "type": "string", "enum": ["allow", "disallow", "unknown"] }
+      },
+      "additionalProperties": false
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "default": "collector-playwright" },
+        "version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "viewport": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "deviceScaleFactor": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "modes": {
+      "type": "object",
+      "properties": {
+        "colorScheme": { "enum": ["light", "dark"] },
+        "reducedMotion": { "enum": ["no-preference", "reduce"] }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "screenshot": { "type": "string" },
+        "html": { "type": "string" },
+        "css": { "type": "array", "items": { "type": "string" } },
+        "har": { "type": "string" },
+        "dom": { "type": "string" },
+        "a11yTree": { "type": "string" },
+        "cssom": { "type": "string" },
+        "computedStyles": { "type": "string" },
+        "bboxes": { "type": "string" },
+        "ir": { "type": "string" },
+        "prompt": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "split": { "enum": ["train", "val", "test", "unknown"] }
+  },
+  "additionalProperties": false
+}
+
+
