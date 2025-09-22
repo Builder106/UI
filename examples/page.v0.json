@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "v0",
+  "root": {
+    "node": "Page",
+    "props": {
+      "id": "home",
+      "role": "main",
+      "aria": { "label": "Main content" },
+      "i18n": { "lang": "en-US", "dir": "ltr" },
+      "skipLinks": [{ "to": "#main", "label": "Skip to main content" }],
+      "layout": { "display": "stack", "direction": "vertical", "gap": 24, "maxWidth": "1200px" },
+      "style": { "backgroundColor": "token(color.background)" }
+    },
+    "children": [
+      {
+        "node": "Nav",
+        "props": {
+          "id": "site-nav",
+          "role": "navigation",
+          "aria": { "label": "Primary navigation" },
+          "layout": { "display": "stack", "direction": "horizontal", "gap": 16 },
+          "style": { "backgroundColor": "token(color.surface)" }
+        },
+        "children": [
+          {
+            "node": "Button",
+            "props": {
+              "id": "nav-home",
+              "role": "link",
+              "aria": { "label": "Home" },
+              "style": { "color": "token(color.fg)" }
+            }
+          }
+        ]
+      },
+      {
+        "node": "Section",
+        "props": {
+          "id": "hero",
+          "role": "region",
+          "aria": { "label": "Hero" },
+          "layout": { "display": "stack", "direction": "vertical", "gap": 16 },
+          "style": { "padding": 24 }
+        },
+        "children": [
+          {
+            "node": "Text",
+            "props": {
+              "id": "hero-title",
+              "role": "heading",
+              "style": { "fontSize": 48, "fontWeight": 700 }
+            }
+          },
+          {
+            "node": "Button",
+            "props": {
+              "id": "cta",
+              "role": "button",
+              "aria": { "label": "Get started" },
+              "events": [{ "type": "click", "action": "navigate:/signup" }],
+              "style": { "backgroundColor": "token(color.primary)", "color": "#fff", "borderRadius": "8px" }
+            }
+          }
+        ]
+      },
+      {
+        "node": "Section",
+        "props": {
+          "id": "features",
+          "role": "region",
+          "aria": { "label": "Features" },
+          "layout": { "display": "grid", "gridTemplateColumns": "repeat(3, 1fr)", "gap": 16 }
+        },
+        "children": [
+          { "node": "Card", "props": { "id": "card-1" } },
+          { "node": "Card", "props": { "id": "card-2" } },
+          { "node": "Card", "props": { "id": "card-3" } }
+        ]
+      }
+    ]
+  }
+}
+
+

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "v0",
+  "root": {
+    "node": "Card",
+    "props": {
+      "id": "feature-card",
+      "layout": { "display": "stack", "direction": "vertical", "gap": 8 },
+      "style": {
+        "backgroundColor": "token(color.surface)",
+        "borderRadius": "12px",
+        "padding": 16,
+        "boxShadow": "token(shadow.lg)"
+      },
+      "variants": {
+        "primary": { "style": { "backgroundColor": "token(color.primary)", "color": "#fff" } },
+        "secondary": { "style": { "backgroundColor": "token(color.secondary)", "color": "#111" } }
+      },
+      "responsive": {
+        "sm": { "style": { "padding": 12 } },
+        "md": { "style": { "padding": 16 } },
+        "lg": { "style": { "padding": 24 } }
+      }
+    },
+    "children": [
+      { "node": "Image", "props": { "id": "icon", "role": "img", "aria": { "label": "Feature icon" } } },
+      { "node": "Text", "props": { "id": "title", "role": "heading" } },
+      { "node": "Text", "props": { "id": "body" } },
+      { "node": "Button", "props": { "id": "learn-more", "role": "button", "aria": { "label": "Learn more" } } }
+    ]
+  }
+}
+
+

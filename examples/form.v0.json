@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "v0",
+  "root": {
+    "node": "Form",
+    "props": {
+      "id": "signup",
+      "role": "form",
+      "aria": { "label": "Sign up form" },
+      "layout": { "display": "stack", "direction": "vertical", "gap": 12 }
+    },
+    "children": [
+      {
+        "node": "Input",
+        "props": {
+          "id": "email",
+          "role": "textbox",
+          "aria": { "label": "Email address", "describedBy": "email-hint" },
+          "dataBindings": { "value": "user.email" }
+        }
+      },
+      {
+        "node": "Input",
+        "props": {
+          "id": "password",
+          "role": "textbox",
+          "aria": { "label": "Password" }
+        }
+      },
+      {
+        "node": "Button",
+        "props": {
+          "id": "submit",
+          "role": "button",
+          "aria": { "label": "Create account" },
+          "events": [{ "type": "submit", "action": "submit:signup" }],
+          "style": { "backgroundColor": "token(color.primary)", "color": "#fff" }
+        }
+      }
+    ]
+  }
+}
+
+

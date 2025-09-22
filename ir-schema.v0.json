@@ -1,0 +1,184 @@
+{
+  "$id": "https://example.com/schemas/ir-schema.v0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI IR v0",
+  "description": "Framework-neutral Intermediate Representation for web UI with a11y/i18n",
+  "type": "object",
+  "required": ["schemaVersion", "root"],
+  "properties": {
+    "schemaVersion": { "const": "v0" },
+    "root": { "$ref": "#/$defs/node" }
+  },
+  "$defs": {
+    "nodeType": {
+      "enum": [
+        "Page", "Section", "Stack", "Grid", "Text", "Image",
+        "Button", "Input", "Form", "Nav", "Card", "Repeat"
+      ]
+    },
+    "role": {
+      "enum": [
+        "none", "banner", "navigation", "main", "contentinfo", "complementary",
+        "form", "region", "img", "button", "link", "heading", "list",
+        "listitem", "textbox", "search", "menu", "menubar", "dialog",
+        "tablist", "tab", "tabpanel", "progressbar", "status", "alert"
+      ]
+    },
+    "aria": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "describedBy": { "type": "string" },
+        "controls": { "type": "string" },
+        "expanded": { "type": "boolean" },
+        "current": { "type": ["boolean", "string"] },
+        "pressed": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "keyboard": {
+      "type": "object",
+      "properties": {
+        "enterActivates": { "type": "boolean" },
+        "escapeCloses": { "type": "boolean" },
+        "arrowNavigation": { "enum": ["none", "horizontal", "vertical", "grid"] }
+      },
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "description": "Layout primitives (flex/stack/grid)",
+      "required": ["display"],
+      "properties": {
+        "display": { "enum": ["stack", "grid", "block"] },
+        "direction": { "enum": ["horizontal", "vertical"] },
+        "align": { "enum": ["start", "center", "end", "stretch"] },
+        "justify": { "enum": ["start", "center", "end", "space-between", "space-around", "space-evenly"] },
+        "gap": { "type": ["number", "string"] },
+        "wrap": { "type": "boolean" },
+        "width": { "type": ["number", "string"] },
+        "maxWidth": { "type": ["number", "string"] },
+        "height": { "type": ["number", "string"] },
+        "minHeight": { "type": ["number", "string"] },
+        "gridTemplateColumns": { "type": "string" },
+        "gridTemplateRows": { "type": "string" },
+        "areas": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "string" } }
+        },
+        "columnGap": { "type": ["number", "string"] },
+        "rowGap": { "type": ["number", "string"] }
+      },
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "description": "Design token-backed style values or CSS variables",
+      "properties": {
+        "color": { "type": "string" },
+        "backgroundColor": { "type": "string" },
+        "fontFamily": { "type": "string" },
+        "fontSize": { "type": ["string", "number"] },
+        "fontWeight": { "type": ["string", "number"] },
+        "lineHeight": { "type": ["string", "number"] },
+        "spacing": { "type": "string" },
+        "borderRadius": { "type": ["string", "number"] },
+        "boxShadow": { "type": "string" },
+        "padding": { "type": ["string", "number"] },
+        "margin": { "type": ["string", "number"] }
+      },
+      "additionalProperties": true
+    },
+    "event": {
+      "type": "object",
+      "required": ["type", "action"],
+      "properties": {
+        "type": { "enum": ["click", "submit", "key", "hover", "focus", "blur", "change"] },
+        "action": { "type": "string" },
+        "target": { "type": "string" },
+        "key": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "variantOverrides": {
+      "type": "object",
+      "properties": {
+        "style": { "$ref": "#/$defs/style" },
+        "layout": { "$ref": "#/$defs/layout" },
+        "aria": { "$ref": "#/$defs/aria" }
+      },
+      "additionalProperties": true
+    },
+    "props": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "$ref": "#/$defs/role" },
+        "aria": { "$ref": "#/$defs/aria" },
+        "focusOrder": { "type": "array", "items": { "type": "string" } },
+        "keyboard": { "$ref": "#/$defs/keyboard" },
+        "skipLinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["to", "label"],
+            "properties": {
+              "to": { "type": "string" },
+              "label": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "i18n": {
+          "type": "object",
+          "properties": {
+            "lang": { "type": "string" },
+            "dir": { "enum": ["ltr", "rtl", "auto"] }
+          },
+          "additionalProperties": false
+        },
+        "layout": { "$ref": "#/$defs/layout" },
+        "style": { "$ref": "#/$defs/style" },
+        "variants": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/variantOverrides" }
+        },
+        "responsive": {
+          "type": "object",
+          "properties": {
+            "sm": { "$ref": "#/$defs/variantOverrides" },
+            "md": { "$ref": "#/$defs/variantOverrides" },
+            "lg": { "$ref": "#/$defs/variantOverrides" },
+            "xl": { "$ref": "#/$defs/variantOverrides" }
+          },
+          "additionalProperties": false
+        },
+        "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+        "dataBindings": { "type": "object", "additionalProperties": { "type": "string" } },
+        "repeat": {
+          "type": "object",
+          "properties": {
+            "for": { "type": "string", "description": "Data path for iteration" },
+            "itemKey": { "type": "string" }
+          },
+          "required": ["for"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": true
+    },
+    "node": {
+      "type": "object",
+      "required": ["node", "props"],
+      "properties": {
+        "node": { "$ref": "#/$defs/nodeType" },
+        "props": { "$ref": "#/$defs/props" },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+
+
