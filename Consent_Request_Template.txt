@@ -1,0 +1,47 @@
+Subject: Request to include your Dribbble shot in an academic research dataset
+
+Hi <Creator Name>,
+
+My name is Olayinka Vaughan, a sophomore at Wesleyan University. I’m building a research dataset to study accessible, high-quality web UI patterns for an academic/experimental AI project. I’m writing to request your permission to include the following Dribbble shot:
+
+  Title: <Shot Title>
+  URL: <Dribbble Shot URL>
+
+What we store
+- The image you published (no alterations beyond thumbnailing for indexing)
+- Basic metadata (title, your handle/profile link, tags)
+- Our internal labels describing visible components (e.g., hero, cards, pricing)
+
+How it will be used
+- Non-commercial research and model development/evaluation
+- May be shared with collaborators under the same non-commercial research terms
+- We will attribute you by name and link to your Dribbble profile wherever this sample appears
+
+What we will NOT do
+- We will not resell, redistribute, or license your artwork for commercial use
+- We will not remove your authorship or claim ownership
+- We will remove your work promptly upon request
+
+Your options (please reply with one):
+1) I consent to inclusion for non-commercial research purposes with attribution.
+2) I consent with these conditions: <add conditions>.
+3) I do not consent.
+
+If you consent, please also confirm:
+- How you would like to be attributed (name/handle/link)
+- Whether derivative thumbnails are permitted for indexing (yes/no)
+- An email to reach you for any takedown or updates
+
+Attribution example
+© <Creator Name> — <Dribbble Profile URL> — used with permission for non‑commercial research.
+
+Takedown
+If at any time you’d like us to remove the sample, email <your email>. We will remove it within 5 business days and confirm.
+
+Thank you for considering!
+
+Best,
+Olayinka Vaughan
+Student
+Wesleyan University
+yvaughan@wesleyan.edu

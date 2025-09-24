@@ -8,7 +8,7 @@ import addFormats from 'ajv-formats';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = process.cwd();
 const schemaPath = path.join(projectRoot, 'ir-schema.v0.json');
 
 function loadJson(p: string) {

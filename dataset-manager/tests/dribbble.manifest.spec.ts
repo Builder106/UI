@@ -8,6 +8,7 @@ import addFormats from 'ajv-formats';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
+const projectRoot = process.cwd();
 
 function loadJson(p: string) {
   return JSON.parse(readFileSync(p, 'utf8'));
@@ -16,15 +17,15 @@ function loadJson(p: string) {
 describe('Dribbble manifest schema v0', () => {
   const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true });
   addFormats(ajv);
-  const schemaPath = path.join(root, 'schemas', 'dribbble.manifest.v0.json');
+  const schemaPath = path.join(process.cwd(), 'schemas', 'dribbble.manifest.v0.json');
   const schema = loadJson(schemaPath);
   const validate = ajv.compile(schema);
 
-  const indexPath = path.join(root, 'datasets', 'sources', 'dribbble', 'pilot', 'index.jsonl');
+  const indexPath = path.join(projectRoot, 'datasets', 'sources', 'dribbble', 'pilot', 'index.jsonl');
   const lines = readFileSync(indexPath, 'utf8').split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const { manifest } = JSON.parse(line);
-    const manifestPath = path.join(root, manifest);
+    const manifestPath = path.join(projectRoot, manifest);
     it(`validates ${manifest}`, () => {
       const data = loadJson(manifestPath);
       const ok = validate(data);

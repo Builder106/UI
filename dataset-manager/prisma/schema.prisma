@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+model Entry {
+  id           String   @id
+  title        String
+  url          String
+  creatorName  String
+  createdAt    DateTime @default(now())
+  consent      Consent?
+  downloads    Download[]
+}
+
+model Consent {
+  entryId    String  @id
+  sentAt     DateTime?
+  granted    Boolean @default(false)
+  evidence   String?
+  grantedAt  DateTime?
+  entry      Entry   @relation(fields: [entryId], references: [id])
+}
+
+model Download {
+  id         String   @id @default(cuid())
+  entryId    String
+  shotId     String
+  imageUrl   String
+  filePath   String?
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  entry      Entry    @relation(fields: [entryId], references: [id])
+}
