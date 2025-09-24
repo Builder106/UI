@@ -8,8 +8,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "types": ["node", "vitest/globals"]
-  },
-  "include": ["tests/**/*", "schemas/**/*", "examples/**/*"]
+  }
 }
-
-
