@@ -23,9 +23,14 @@
         </ul>
       </div>
     </nav>
-    <main class="container" id="main">
+    <main class="container" id="main" aria-live="polite">
+      <div id="tokenWarn" class="card-panel yellow darken-2 black-text" style="display:none" role="status" aria-atomic="true">
+        Dribbble access token not set. Downloads are disabled.
+      </div>
+      <div class="row" style="margin-bottom: 0">
+        <div class="col s12 m6">
       <h5>Consent Requests</h5>
-      <div class="card">
+      <div class="card z-depth-1">
         <div class="card-content">
           <span class="card-title">Prepare Email</span>
           <div class="row">
@@ -34,39 +39,58 @@
                 <div class="input-field col s4">
                   <input id="id" name="id" type="text" required aria-required="true" />
                   <label for="id">Entry ID</label>
+                  <span class="helper-text">Example: 001 (short, unique)</span>
                 </div>
                 <div class="input-field col s8">
                   <input id="creator" name="creator" type="text" required aria-required="true" />
                   <label for="creator">Creator name</label>
+                  <span class="helper-text">Designer’s display name</span>
                 </div>
               </div>
               <div class="row">
                 <div class="input-field col s12">
                   <input id="title" name="title" type="text" required aria-required="true" />
                   <label for="title">Shot title</label>
+                  <span class="helper-text">E.g., “Banking SaaS Landing”</span>
                 </div>
               </div>
               <div class="row">
                 <div class="input-field col s12">
                   <input id="url" name="url" type="url" required aria-required="true" />
                   <label for="url">Shot URL</label>
+                  <span class="helper-text">Full Dribbble link, e.g., https://dribbble.com/shots/12345</span>
                 </div>
               </div>
-              <button class="btn waves-effect waves-light" type="submit">Generate Email</button>
+              <div class="row" style="margin-bottom:0">
+                <div class="input-field col s12">
+                  <input id="toEmail" name="toEmail" type="email" aria-required="true" />
+                  <label for="toEmail">Creator email</label>
+                  <span class="helper-text">We’ll send the consent request here</span>
+                </div>
+              </div>
+              <button id="btnGenerate" class="btn waves-effect waves-light" type="submit" disabled>
+                <span class="btn-text">Generate Email</span>
+                <span class="preloader-wrapper small active" style="display:none"><div class="spinner-layer spinner-white-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></span>
+              </button>
+              <button id="btnSendEmail" class="btn waves-effect green" type="button" style="margin-left:8px" disabled>
+                Send Email
+              </button>
             </form>
           </div>
           <pre id="result" style="white-space: pre-wrap"></pre>
         </div>
       </div>
-
+        </div>
+        <div class="col s12 m6">
       <h5>Dashboard</h5>
-      <div class="card">
+      <div class="card z-depth-2">
         <div class="card-content">
           <span class="card-title">Status & Actions</span>
           <div class="row" style="margin-bottom: 0">
             <div class="input-field col s4">
-              <input id="dashId" type="text" aria-label="Entry ID (same as above)" />
-              <label for="dashId">Entry ID (defaults to form ID)</label>
+              <input id="dashId" type="text" aria-label="Entry ID (same as above)" readonly />
+              <label for="dashId">Entry ID</label>
+              <span class="helper-text">Prefilled from form <a href="#" id="editId" aria-label="Edit Entry ID">edit</a></span>
             </div>
             <div class="input-field col s8">
               <input id="evidence" type="text" aria-label="Consent evidence path (optional)" />
@@ -76,19 +100,48 @@
           <div class="row" style="margin-top: 8px">
             <div class="col s12">
               <button id="btnStatus" class="btn-flat waves-effect">Check Status</button>
-              <button id="btnMarkSent" class="btn waves-effect teal" style="margin-left: 8px">Mark Sent</button>
-              <button id="btnMarkConsent" class="btn waves-effect indigo" style="margin-left: 8px">Mark Consent</button>
-              <button id="btnDownload" class="btn waves-effect deep-purple" style="margin-left: 8px">Download Shots</button>
+              <button id="btnMarkSent" class="btn waves-effect teal" style="margin-left: 8px" disabled>Mark Sent</button>
+              <button id="btnMarkConsent" class="btn waves-effect indigo" style="margin-left: 8px" disabled>Mark Consent</button>
+              <button id="btnDownload" class="btn waves-effect deep-purple tooltipped" data-tooltip="Connect token to enable" style="margin-left: 8px" disabled>Download Shots</button>
             </div>
           </div>
-          <pre id="statusResult" style="white-space: pre-wrap"></pre>
+          <div class="divider" style="margin: 12px 0"></div>
+          <div id="statusChips" style="margin-bottom: 8px"></div>
+          <pre id="statusResult" style="white-space: pre-wrap; max-height: 180px; overflow:auto"></pre>
+          <table id="shotsTable" class="striped responsive-table" style="display:none">
+            <thead>
+              <tr><th>Shot ID</th><th>Image URL</th><th>File</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
         </div>
       </div>
     </main>
     <script>
+      function validateForm() {
+        const id = document.getElementById('id').value.trim();
+        const creator = document.getElementById('creator').value.trim();
+        const title = document.getElementById('title').value.trim();
+        const url = document.getElementById('url').value.trim();
+        const toEmail = document.getElementById('toEmail').value.trim();
+        const ok = !!id && !!creator && !!title && /^https?:\/\//.test(url);
+        const mailOk = ok && /.+@.+\..+/.test(toEmail);
+        document.getElementById('btnGenerate').disabled = !ok;
+        document.getElementById('btnMarkSent').disabled = !ok;
+        document.getElementById('btnSendEmail').disabled = !mailOk;
+        return ok;
+      }
+
+      ['id','creator','title','url'].forEach(id => document.getElementById(id).addEventListener('input', validateForm));
+
       document.getElementById('consentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const params = new URLSearchParams(new FormData(e.target));
+        const btn = document.getElementById('btnGenerate');
+        btn.querySelector('.preloader-wrapper').style.display = 'inline-block';
+        btn.querySelector('.btn-text').style.display = 'none';
         const r = await fetch(`/consent/prepare?${params.toString()}`);
         const data = await r.json();
         const result = document.getElementById('result');
@@ -97,6 +150,8 @@
         } else {
           result.textContent = `Error: ${data.error || 'unknown'}`;
         }
+        btn.querySelector('.preloader-wrapper').style.display = 'none';
+        btn.querySelector('.btn-text').style.display = 'inline';
       });
 
       function getId() {
@@ -111,6 +166,29 @@
         const r = await fetch(`/dashboard/status?id=${encodeURIComponent(id)}`);
         const data = await r.json();
         document.getElementById('statusResult').textContent = JSON.stringify(data, null, 2);
+        const chips = document.getElementById('statusChips');
+        chips.innerHTML = '';
+        const s = data.status || {};
+        if (s.sentAt) chips.innerHTML += `<span class="chip">Sent: ${new Date(s.sentAt).toLocaleString()}</span>`;
+        if (s.consent) chips.innerHTML += `<span class="chip ${s.consent.granted?'green white-text':''}">Consent: ${s.consent.granted?'Granted':'No'}</span>`;
+        if (s.downloaded && s.downloaded.shots) chips.innerHTML += `<span class="chip">Downloads: ${s.downloaded.shots}</span>`;
+
+        const table = document.getElementById('shotsTable');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        if (data.entry && data.entry.downloads && data.entry.downloads.length) {
+          table.style.display = '';
+          for (const d of data.entry.downloads) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${d.shotId}</td><td><a href="${d.imageUrl}" target="_blank" rel="noopener">link</a></td><td>${d.filePath||''}</td><td><button class="btn-flat" data-copy="${d.filePath||''}">Copy</button></td>`;
+            tbody.appendChild(tr);
+          }
+          tbody.querySelectorAll('button[data-copy]').forEach(btn => btn.addEventListener('click', () => {
+            const t = btn.getAttribute('data-copy'); navigator.clipboard.writeText(t||''); M.toast({html:'Path copied'});
+          }));
+        } else {
+          table.style.display = 'none';
+        }
       }
 
       async function markSent() {
@@ -151,6 +229,35 @@
       document.getElementById('btnMarkSent').addEventListener('click', markSent);
       document.getElementById('btnMarkConsent').addEventListener('click', markConsent);
       document.getElementById('btnDownload').addEventListener('click', downloadShots);
+      document.getElementById('btnSendEmail').addEventListener('click', async () => {
+        const id = getId();
+        const to = document.getElementById('toEmail').value.trim();
+        const title = document.getElementById('title').value.trim();
+        if (!id || !to || !title) return M.toast({html: 'Fill all fields'});
+        const q = new URLSearchParams({ id, to, title });
+        const r = await fetch(`/email/consent?${q.toString()}`, { method: 'POST' });
+        const data = await r.json();
+        if (data.ok) { M.toast({html: `Email sent (id ${data.messageId})`}); await checkStatus(); }
+        else { M.toast({html: `Send failed: ${data.error||'unknown'}`}); }
+      });
+
+      // Prefill dashboard ID, token gate, init
+      function syncDashId() {
+        const v = document.getElementById('id').value.trim();
+        const dash = document.getElementById('dashId');
+        if (!dash.dataset.editing) dash.value = v;
+      }
+      document.getElementById('id').addEventListener('input', syncDashId);
+      document.getElementById('editId').addEventListener('click', (e)=>{e.preventDefault(); const d=document.getElementById('dashId'); d.readOnly=false; d.dataset.editing='1'; d.focus();});
+      validateForm(); syncDashId();
+      fetch('/config').then(r=>r.json()).then(cfg=>{
+        if (!cfg.hasToken) {
+          document.getElementById('tokenWarn').style.display='block';
+        } else {
+          const btn = document.getElementById('btnDownload');
+          btn.disabled = false; btn.removeAttribute('data-tooltip');
+        }
+      });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   </body>

@@ -8,14 +8,20 @@ import { fileURLToPath } from 'url';
 import { fillConsentTemplate } from './lib/consent';
 import { prisma } from './lib/db';
 import { fetchUserShots, downloadImage } from './lib/dribbble';
+import { sendConsentEmail } from './lib/mailer';
 
-dotenv.config();
+// Load env from dataset-manager/.env regardless of where the process is started
+const dmEnvPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.env');
+dotenv.config({ path: dmEnvPath, override: true });
 
 export function createApp() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const app = express();
   app.use(express.static(path.join(__dirname, 'public')));
+  app.get('/config', (_, res) => {
+    res.json({ hasToken: Boolean(process.env.DRIBBBLE_ACCESS_TOKEN) });
+  });
 
   app.get('/health', (_, res) => res.json({ ok: true }));
 
@@ -133,6 +139,24 @@ export function createApp() {
     res.json({ ok: true, id, saved: count });
   });
 
+  app.post('/email/consent', async (req, res) => {
+   const id = String(req.query.id || '');
+   const to = String(req.query.to || '');
+   const title = String(req.query.title || '');
+   if (!id || !to || !title) return res.status(400).json({ error: 'missing' });
+
+   const bodyPath = path.join(process.cwd(), 'datasets', 'sources', 'dribbble', 'pilot', id, 'consent-request.txt');
+   const text = readFileSync(bodyPath, 'utf8');
+   const r = await sendConsentEmail(to, `Consent request: ${title}`, text, id);
+
+   await prisma.consent.upsert({
+      where: { entryId: id },
+      create: { entryId: id, sentAt: new Date() },
+      update: { sentAt: new Date() }
+   });
+
+   res.json({ ok: true, messageId: r.messageId });
+   });
   return app;
 }
 
