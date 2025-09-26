@@ -14,9 +14,12 @@ model Entry {
   title        String
   url          String
   creatorName  String
+  creatorHandle String?
+  dribbbleUserId String?
   createdAt    DateTime @default(now())
   consent      Consent?
   downloads    Download[]
+  token        Token?
 }
 
 model Consent {
@@ -25,6 +28,9 @@ model Consent {
   granted    Boolean @default(false)
   evidence   String?
   grantedAt  DateTime?
+  scope      String  @default("all_shots")
+  expiresAt  DateTime?
+  revokedAt  DateTime?
   entry      Entry   @relation(fields: [entryId], references: [id])
 }
 
@@ -36,5 +42,15 @@ model Download {
   filePath   String?
   status     String   @default("pending")
   createdAt  DateTime @default(now())
+  tags       String?
   entry      Entry    @relation(fields: [entryId], references: [id])
+}
+
+model Token {
+  id          String   @id @default(cuid())
+  entryId     String   @unique
+  provider    String   @default("dribbble")
+  accessToken String
+  createdAt   DateTime @default(now())
+  entry       Entry    @relation(fields: [entryId], references: [id])
 }

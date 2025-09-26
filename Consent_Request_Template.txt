@@ -1,15 +1,12 @@
-Subject: Request to include your Dribbble shot in an academic research dataset
+Subject: Request to include your current Dribbble shots in an academic research dataset
 
 Hi <Creator Name>,
 
-My name is Olayinka Vaughan, a sophomore at Wesleyan University. I’m building a research dataset to study accessible, high-quality web UI patterns for an academic/experimental AI project. I’m writing to request your permission to include the following Dribbble shot:
-
-  Title: <Shot Title>
-  URL: <Dribbble Shot URL>
+My name is Olayinka Vaughan, a sophomore at Wesleyan University. I’m building a research dataset to study accessible, high-quality web UI patterns for an academic/experimental AI project. I’m writing to request your permission to include ALL of your current Dribbble shots in the dataset.
 
 What we store
-- The image you published (no alterations beyond thumbnailing for indexing)
-- Basic metadata (title, your handle/profile link, tags)
+- The images you published (no alterations beyond thumbnailing for indexing)
+- Basic metadata per shot (title, your handle/profile link, tags)
 - Our internal labels describing visible components (e.g., hero, cards, pricing)
 
 How it will be used
@@ -23,8 +20,14 @@ What we will NOT do
 - We will remove your work promptly upon request
 
 Your options (please reply with one):
-1) I consent to inclusion for non-commercial research purposes with attribution.
-2) I consent with these conditions: <add conditions>.
+1) I consent to inclusion of ALL my current Dribbble shots for non-commercial research purposes with attribution.
+2) I consent with these conditions (edit any that apply):
+   - Attribution: Credit as "<Name/Handle>" with link <URL>.
+   - Scope exclusions: Exclude these shots: <list or links>.
+   - Distribution: Internal research only (no public dataset hosting).
+   - Derivatives: Thumbnails OK; no cropping/watermark removal.
+   - Duration: Consent valid until <date> (or revoke anytime).
+   - Revocation SLA: Remove within <N> business days after request.
 3) I do not consent.
 
 If you consent, please also confirm:

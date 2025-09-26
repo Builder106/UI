@@ -19,7 +19,7 @@
       <div class="nav-wrapper container">
         <a class="brand-logo" href="#">WeaveUI</a>
         <ul id="nav-mobile" class="right">
-          <li><a href="/oauth/start">Connect Dribbble</a></li>
+          <li><a id="connectBtn" href="/oauth/start">Connect Dribbble</a></li>
         </ul>
       </div>
     </nav>
@@ -45,6 +45,13 @@
                   <input id="creator" name="creator" type="text" required aria-required="true" />
                   <label for="creator">Creator name</label>
                   <span class="helper-text">Designer’s display name</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="handle" name="handle" type="text" />
+                  <label for="handle">Creator handle (optional)</label>
+                  <span class="helper-text">E.g., @creator (used to associate token/entry)</span>
                 </div>
               </div>
               <div class="row">
@@ -103,14 +110,23 @@
               <button id="btnMarkSent" class="btn waves-effect teal" style="margin-left: 8px" disabled>Mark Sent</button>
               <button id="btnMarkConsent" class="btn waves-effect indigo" style="margin-left: 8px" disabled>Mark Consent</button>
               <button id="btnDownload" class="btn waves-effect deep-purple tooltipped" data-tooltip="Connect token to enable" style="margin-left: 8px" disabled>Download Shots</button>
+              <a id="btnReconnect" class="btn waves-effect orange" style="margin-left: 8px; display:none" href="#">Reconnect Dribbble</a>
             </div>
           </div>
           <div class="divider" style="margin: 12px 0"></div>
           <div id="statusChips" style="margin-bottom: 8px"></div>
+          <div class="row" style="margin-bottom: 8px">
+            <div class="input-field col s6">
+              <select id="tagFilter">
+                <option value="" selected>All tags</option>
+              </select>
+              <label for="tagFilter">Filter by tag</label>
+            </div>
+          </div>
           <pre id="statusResult" style="white-space: pre-wrap; max-height: 180px; overflow:auto"></pre>
           <table id="shotsTable" class="striped responsive-table" style="display:none">
             <thead>
-              <tr><th>Shot ID</th><th>Image URL</th><th>File</th><th></th></tr>
+              <tr><th>Shot ID</th><th>Tags</th><th>Image URL</th><th>File</th><th></th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -127,7 +143,7 @@
         const url = document.getElementById('url').value.trim();
         const toEmail = document.getElementById('toEmail').value.trim();
         const ok = !!id && !!creator && !!title && /^https?:\/\//.test(url);
-        const mailOk = ok && /.+@.+\..+/.test(toEmail);
+        const mailOk = ok && /\S+@\S+\.\S+/.test(toEmail);
         document.getElementById('btnGenerate').disabled = !ok;
         document.getElementById('btnMarkSent').disabled = !ok;
         document.getElementById('btnSendEmail').disabled = !mailOk;
@@ -152,6 +168,8 @@
         }
         btn.querySelector('.preloader-wrapper').style.display = 'none';
         btn.querySelector('.btn-text').style.display = 'inline';
+        // Enable Send if everything is filled and email looks valid
+        validateForm();
       });
 
       function getId() {
@@ -173,16 +191,54 @@
         if (s.consent) chips.innerHTML += `<span class="chip ${s.consent.granted?'green white-text':''}">Consent: ${s.consent.granted?'Granted':'No'}</span>`;
         if (s.downloaded && s.downloaded.shots) chips.innerHTML += `<span class="chip">Downloads: ${s.downloaded.shots}</span>`;
 
+        // Token chip and reconnect
+        const cfg = await fetch('/config?id=' + encodeURIComponent(id)).then(x=>x.json());
+        if (cfg.hasToken) {
+          chips.innerHTML += `<span class="chip blue white-text">Token: Connected</span>`;
+          document.getElementById('btnReconnect').style.display='none';
+          const btn = document.getElementById('btnDownload');
+          btn.disabled = false; btn.removeAttribute('data-tooltip');
+        } else {
+          chips.innerHTML += `<span class="chip">Token: Not connected</span>`;
+          const rec = document.getElementById('btnReconnect');
+          rec.style.display='inline-block';
+          rec.href = `/oauth/start?id=${encodeURIComponent(id)}`;
+        }
+
         const table = document.getElementById('shotsTable');
         const tbody = table.querySelector('tbody');
         tbody.innerHTML = '';
         if (data.entry && data.entry.downloads && data.entry.downloads.length) {
           table.style.display = '';
+          // Build tag index
+          const tagCounts = {};
+          for (const d of data.entry.downloads) {
+            const tags = (d.tags || '').split(',').filter(Boolean);
+            for (const t of tags) tagCounts[t] = (tagCounts[t]||0)+1;
+          }
+          // Populate filter select
+          const sel = document.getElementById('tagFilter');
+          const current = sel.value;
+          sel.innerHTML = '<option value="" selected>All tags</option>' + Object.keys(tagCounts).sort().map(t=>`<option value="${t}">${t} (${tagCounts[t]})</option>`).join('');
+          // Render rows
+          const activeTag = current; // preserve choice if present
           for (const d of data.entry.downloads) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${d.shotId}</td><td><a href="${d.imageUrl}" target="_blank" rel="noopener">link</a></td><td>${d.filePath||''}</td><td><button class="btn-flat" data-copy="${d.filePath||''}">Copy</button></td>`;
+            const tags = d.tags || '';
+            tr.dataset.tags = tags;
+            tr.innerHTML = `<td>${d.shotId}</td><td>${tags}</td><td><a href="${d.imageUrl}" target="_blank" rel="noopener">link</a></td><td>${d.filePath||''}</td><td><button class="btn-flat" data-copy="${d.filePath||''}">Copy</button></td>`;
             tbody.appendChild(tr);
           }
+          // Apply filter if previously selected
+          function applyTagFilter() {
+            const f = document.getElementById('tagFilter').value;
+            tbody.querySelectorAll('tr').forEach(tr => {
+              if (!f) tr.style.display = '';
+              else tr.style.display = (tr.dataset.tags.split(',').includes(f)) ? '' : 'none';
+            });
+          }
+          document.getElementById('tagFilter').addEventListener('change', applyTagFilter);
+          if (activeTag) { document.getElementById('tagFilter').value = activeTag; applyTagFilter(); }
           tbody.querySelectorAll('button[data-copy]').forEach(btn => btn.addEventListener('click', () => {
             const t = btn.getAttribute('data-copy'); navigator.clipboard.writeText(t||''); M.toast({html:'Path copied'});
           }));
@@ -197,7 +253,8 @@
         const title = document.getElementById('title').value.trim();
         const url = document.getElementById('url').value.trim();
         const creator = document.getElementById('creator').value.trim();
-        const q = new URLSearchParams({ id, title, url, creator });
+        const handle = document.getElementById('handle').value.trim();
+        const q = new URLSearchParams({ id, title, url, creator, handle });
         const r = await fetch(`/dashboard/mark-sent?${q.toString()}`, { method: 'POST' });
         const data = await r.json();
         if (!data.ok) return M.toast({html: 'Mark sent failed'});
@@ -233,8 +290,10 @@
         const id = getId();
         const to = document.getElementById('toEmail').value.trim();
         const title = document.getElementById('title').value.trim();
-        if (!id || !to || !title) return M.toast({html: 'Fill all fields'});
-        const q = new URLSearchParams({ id, to, title });
+        const creator = document.getElementById('creator').value.trim();
+        const url = document.getElementById('url').value.trim();
+        if (!id || !to || !title || !creator || !/^https?:\/\//.test(url)) return M.toast({html: 'Fill all fields (id, creator, title, url, to)'});
+        const q = new URLSearchParams({ id, to, title, creator, url });
         const r = await fetch(`/email/consent?${q.toString()}`, { method: 'POST' });
         const data = await r.json();
         if (data.ok) { M.toast({html: `Email sent (id ${data.messageId})`}); await checkStatus(); }
@@ -250,7 +309,15 @@
       document.getElementById('id').addEventListener('input', syncDashId);
       document.getElementById('editId').addEventListener('click', (e)=>{e.preventDefault(); const d=document.getElementById('dashId'); d.readOnly=false; d.dataset.editing='1'; d.focus();});
       validateForm(); syncDashId();
-      fetch('/config').then(r=>r.json()).then(cfg=>{
+      function updateConnectLink() {
+        const id = getId();
+        const link = document.getElementById('connectBtn');
+        link.href = `/oauth/start?id=${encodeURIComponent(id)}`;
+      }
+      document.getElementById('id').addEventListener('input', updateConnectLink);
+      updateConnectLink();
+
+      fetch('/config?id=' + encodeURIComponent(getId())).then(r=>r.json()).then(cfg=>{
         if (!cfg.hasToken) {
           document.getElementById('tokenWarn').style.display='block';
         } else {
