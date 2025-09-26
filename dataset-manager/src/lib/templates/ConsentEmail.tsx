@@ -11,9 +11,12 @@ type Props = {
   senderOrg: string;
   senderEmail: string;
   logoSrc?: string; // optional; defaults to CID for real emails
+  approveUrl?: string;
+  declineUrl?: string;
+  pageUrl?: string;
 };
 
-export const ConsentEmail: React.FC<Props> = ({ creatorName, shotTitle, shotUrl, shotImage, senderEmail, logoSrc }) => (
+export const ConsentEmail: React.FC<Props> = ({ creatorName, shotTitle, shotUrl, shotImage, senderEmail, logoSrc, approveUrl, declineUrl, pageUrl }) => (
   <Html>
     <Head />
     <Preview>Request to include your current Dribbble shots in a research dataset</Preview>
@@ -90,12 +93,12 @@ export const ConsentEmail: React.FC<Props> = ({ creatorName, shotTitle, shotUrl,
         </Row>
 
         <Section style={{ marginTop: 20 }}>
-          <Text style={{ fontWeight: 700, margin: '0 0 12px' }}>Quick reply</Text>
+          <Text style={{ fontWeight: 700, margin: '0 0 12px' }}>Quick action</Text>
           <Row style={{ width: '100%', tableLayout: 'fixed' }}>
             <Column style={{ width: '33.33%' }}>
               <Section style={{ paddingRight: 12 }}>
                 <Button
-                href={`mailto:${senderEmail}?subject=${encodeURIComponent('Consent: include my Dribbble shots')}&body=${encodeURIComponent('I consent to inclusion of ALL my current Dribbble shots for non‑commercial research with attribution.')}`}
+                href={approveUrl || pageUrl || '#'}
                 style={{ backgroundColor: '#1d4ed8', color: '#ffffff', padding: '12px 14px', borderRadius: 6, textDecoration: 'none', display: 'block', width: '90%', margin: '0 auto', textAlign: 'center' }}>
                 I consent
                 </Button>
@@ -104,7 +107,7 @@ export const ConsentEmail: React.FC<Props> = ({ creatorName, shotTitle, shotUrl,
             <Column style={{ width: '33.33%' }}>
               <Section style={{ paddingLeft: 12, paddingRight: 12 }}>
                 <Button
-                href={`mailto:${senderEmail}?subject=${encodeURIComponent('Consent: with conditions')}&body=${encodeURIComponent('I consent with the following conditions:\n• Attribution format: \n• Excluded shots: \n• Internal‑only: yes/no\n• Thumbnails only: yes/no\n• Expiry date: \n• Removal SLA: ')}`}
+                href={pageUrl || approveUrl || '#'}
                 style={{ backgroundColor: '#0f766e', color: '#ffffff', padding: '12px 14px', borderRadius: 6, textDecoration: 'none', display: 'block', width: '90%', margin: '0 auto', textAlign: 'center' }}>
                 Consent with conditions
                 </Button>
@@ -113,7 +116,7 @@ export const ConsentEmail: React.FC<Props> = ({ creatorName, shotTitle, shotUrl,
             <Column style={{ width: '33.33%' }}>
               <Section style={{ paddingLeft: 12 }}>
                 <Button
-                href={`mailto:${senderEmail}?subject=${encodeURIComponent('Consent: do not include')}&body=${encodeURIComponent('I do not consent.')}`}
+                href={declineUrl || pageUrl || '#'}
                 style={{ backgroundColor: '#b91c1c', color: '#ffffff', padding: '12px 14px', borderRadius: 6, textDecoration: 'none', display: 'block', width: '90%', margin: '0 auto', textAlign: 'center' }}>
                 I do not consent
                 </Button>

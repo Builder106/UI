@@ -16,9 +16,9 @@ describe('consent template fill', () => {
       senderEmail: 'yvaughan@wesleyan.edu'
     });
     expect(email).toContain('Hi Jane Doe');
-    expect(email).toContain('Title: SaaS Landing');
-    expect(email).toContain('URL: https://dribbble.com/shots/123');
+    expect(email).toMatch(/Request to include your current Dribbble shots/i);
     expect(email).toContain('Olayinka Vaughan');
+    expect(email).toContain('Wesleyan University');
   });
 });
 

@@ -8,7 +8,8 @@ import { fileURLToPath } from 'url';
 import { fillConsentTemplate } from './lib/consent';
 import { prisma } from './lib/db';
 import { fetchUserShots, downloadImage } from './lib/dribbble';
-import { sendConsentEmail, sendConsentEmailFromData } from './lib/mailer';
+import { sendConsentEmail, sendConsentEmailFromData, sendConsentDecisionReceipt } from './lib/mailer';
+import { verifyConsentToken } from './lib/consentToken';
 import { render } from '@react-email/render';
 import { createElement } from 'react';
 
@@ -32,6 +33,89 @@ export function createApp() {
   });
 
   app.get('/health', (_, res) => res.json({ ok: true }));
+
+  // Web consent page (minimal HTML)
+  app.get('/consent/:token', async (req, res) => {
+    const token = String(req.params.token || '');
+    try {
+      const data = verifyConsentToken(token);
+      const entry = await prisma.entry.findUnique({ where: { id: data.entryId } });
+      const name = entry?.creatorName || 'Creator';
+      const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consent</title><style>body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial; padding:16px}</style></head><body><h3>WeaveUI Consent</h3><p>Hi ${name}, please confirm if we may include your current Dribbble shots for non‑commercial research with attribution.</p><p><a href="/consent/approve?token=${encodeURIComponent(token)}" style="display:inline-block;background:#1d4ed8;color:#fff;padding:10px 12px;border-radius:6px;text-decoration:none">I consent</a> <a href="/consent/decline?token=${encodeURIComponent(token)}" style="display:inline-block;background:#b91c1c;color:#fff;padding:10px 12px;border-radius:6px;text-decoration:none;margin-left:8px">I do not consent</a></p><p><small>Token tied to ${data.to}. Expires ${(new Date(data.exp*1000)).toLocaleString()}.</small></p></body></html>`;
+      res.type('html').send(html);
+    } catch (e: any) {
+      res.status(400).send(`<pre>Invalid or expired link: ${e?.message || 'error'}</pre>`);
+    }
+  });
+
+  app.post('/consent/approve', async (req, res) => {
+    const token = String(req.query.token || req.body?.token || '');
+    try {
+      const data = verifyConsentToken(token);
+      await prisma.entry.upsert({ where: { id: data.entryId }, create: { id: data.entryId, title: '', url: '', creatorName: '' }, update: {} });
+      await prisma.consent.upsert({
+        where: { entryId: data.entryId },
+        create: { entryId: data.entryId, granted: true, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:approve' },
+        update: { granted: true, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:approve' }
+      });
+      try { await sendConsentDecisionReceipt(data.to, data.entryId, 'approve', { detailsUrl: `${req.protocol}://${req.get('host')}/consent/${encodeURIComponent(token)}` }); } catch {}
+      res.json({ ok: true, entryId: data.entryId });
+    } catch (e: any) {
+      res.status(400).json({ ok: false, error: 'bad_token', message: e?.message });
+    }
+  });
+
+  app.post('/consent/decline', async (req, res) => {
+    const token = String(req.query.token || req.body?.token || '');
+    try {
+      const data = verifyConsentToken(token);
+      await prisma.entry.upsert({ where: { id: data.entryId }, create: { id: data.entryId, title: '', url: '', creatorName: '' }, update: {} });
+      await prisma.consent.upsert({
+        where: { entryId: data.entryId },
+        create: { entryId: data.entryId, granted: false, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:decline' },
+        update: { granted: false, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:decline' }
+      });
+      try { await sendConsentDecisionReceipt(data.to, data.entryId, 'decline', { detailsUrl: `${req.protocol}://${req.get('host')}/consent/${encodeURIComponent(token)}` }); } catch {}
+      res.json({ ok: true, entryId: data.entryId });
+    } catch (e: any) {
+      res.status(400).json({ ok: false, error: 'bad_token', message: e?.message });
+    }
+  });
+
+  // GET variants for email link clicks
+  app.get('/consent/approve', async (req, res) => {
+    const token = String(req.query.token || '');
+    try {
+      const data = verifyConsentToken(token);
+      await prisma.entry.upsert({ where: { id: data.entryId }, create: { id: data.entryId, title: '', url: '', creatorName: '' }, update: {} });
+      await prisma.consent.upsert({
+        where: { entryId: data.entryId },
+        create: { entryId: data.entryId, granted: true, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:approve' },
+        update: { granted: true, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:approve' }
+      });
+      try { await sendConsentDecisionReceipt(data.to, data.entryId, 'approve', { detailsUrl: `${req.protocol}://${req.get('host')}/consent/${encodeURIComponent(token)}` }); } catch {}
+      res.type('html').send('<p>Consent recorded. Thank you!</p>');
+    } catch (e: any) {
+      res.status(400).type('html').send(`<pre>Invalid or expired link: ${e?.message || 'error'}</pre>`);
+    }
+  });
+
+  app.get('/consent/decline', async (req, res) => {
+    const token = String(req.query.token || '');
+    try {
+      const data = verifyConsentToken(token);
+      await prisma.entry.upsert({ where: { id: data.entryId }, create: { id: data.entryId, title: '', url: '', creatorName: '' }, update: {} });
+      await prisma.consent.upsert({
+        where: { entryId: data.entryId },
+        create: { entryId: data.entryId, granted: false, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:decline' },
+        update: { granted: false, grantedAt: new Date(), scope: data.scope || 'all_shots', evidence: 'web:decline' }
+      });
+      try { await sendConsentDecisionReceipt(data.to, data.entryId, 'decline', { detailsUrl: `${req.protocol}://${req.get('host')}/consent/${encodeURIComponent(token)}` }); } catch {}
+      res.type('html').send('<p>Preference recorded. No content will be included.</p>');
+    } catch (e: any) {
+      res.status(400).type('html').send(`<pre>Invalid or expired link: ${e?.message || 'error'}</pre>`);
+    }
+  });
 
   // Permanent preview of the consent email template rendered as HTML
   app.get('/email/preview', async (req, res) => {
@@ -232,7 +316,7 @@ export function createApp() {
         }
       }
 
-      // Structured send only (no legacy file fallback)
+      // Structured send only (no legacy file fallback); includes web consent links
       if (creator && shotUrl) {
         const r = await sendConsentEmailFromData(to, `Consent request: ${title}`, id, {
           creatorName: creator || 'Creator',
@@ -241,7 +325,8 @@ export function createApp() {
           senderName: process.env.SENDER_NAME,
           senderRole: process.env.SENDER_ROLE,
           senderOrg: process.env.SENDER_ORG,
-          senderEmail: process.env.SENDER_EMAIL
+          senderEmail: process.env.SENDER_EMAIL,
+          entryId: id
         });
         // Ensure an Entry exists to satisfy FK before writing Consent
         await prisma.entry.upsert({ where: { id }, create: { id, title, url: shotUrl, creatorName: creator }, update: { title, url: shotUrl, creatorName: creator } });
